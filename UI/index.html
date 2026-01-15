@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Chat App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        .container {
+            height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 380px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 25px;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .user-details h2 {
+            font-size: 22px;
+            margin-bottom: 2px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        .online-dot {
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        /* Conversations List */
+        .conv-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .conv-item {
+            padding: 18px;
+            margin-bottom: 8px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            position: relative;
+        }
+
+        .conv-item:hover {
+            background: rgba(243, 244, 246, 0.8);
+            transform: translateX(8px);
+        }
+
+        .conv-item.active {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            border-left-color: #ec4899;
+            box-shadow: 0 6px 25px rgba(79, 70, 229, 0.4);
+        }
+
+        .conv-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .conv-details h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .conv-meta {
+            font-size: 13px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .unread-badge {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+        }
+
+        .group-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        /* Chat Header */
+        .chat-header {
+            padding: 25px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .chat-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .member-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        /* Messages */
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 25px;
+            background: #f8fafc;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            max-width: 75%;
+            animation: slideIn 0.4s ease;
+        }
+
+        .message.sent {
+            justify-content: flex-end;
+        }
+
+        .message.received {
+            justify-content: flex-start;
+        }
+
+        .msg-bubble {
+            padding: 16px 20px;
+            border-radius: 22px;
+            max-width: 100%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .msg-bubble.sent {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+        }
+
+        .msg-bubble.received {
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+        .msg-meta {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .read-status {
+            font-size: 14px;
+        }
+
+        .read-status.read {
+            color: #10b981;
+        }
+
+        /* Input */
+        .input-area {
+            padding: 25px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .msg-input {
+            flex: 1;
+            padding: 18px 25px;
+            border: 2px solid #e2e8f0;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .msg-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
+        .send-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border: none;
+            color: white;
+            font-size: 22px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .send-btn:active {
+            transform: scale(0.6);
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 300px;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- User Selector -->
+    <div style="
+    position: absolute; top: 25px; right: 25px; z-index: 1000; 
+    background: rgba(255,255,255,0.95);
+    padding: 12px 20px; border-radius: 25px; 
+    backdrop-filter: blur(20px); 
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    display: flex; align-items: center; gap: 15px;
+">
+        <span style="font-weight: 600; color: #374151;" id="currentUserDisplay"></span>
+        <button onclick="logout()" style="
+        padding: 10px 20px; border-radius: 20px; border: none; 
+        background: linear-gradient(135deg, #ef4444, #dc2626); 
+        color: white; font-weight: 600; cursor: pointer; 
+        font-family: inherit; transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            Logout
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="header">
+                <div class="user-info">
+                    <div class="avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <h2 id="userName">Alice</h2>
+                        <div class="status">
+                            <div class="online-dot"></div>
+                            Online
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="conv-list" id="convList">
+            </div>
+        </div>
+
+        <!-- Main Chat -->
+        <div class="main-chat">
+            <div class="chat-header" id="chatHeader" style="display: none;">
+                <div class="avatar" id="chatAvatar">A</div>
+                <div class="chat-title" id="chatTitle">Select a conversation</div>
+                <div class="member-count" id="memberCount">-</div>
+            </div>
+            <div class="messages" id="messages">
+                <div style="text-align: center; color: #6b7280; padding: 60px 20px; font-style: italic;">
+                    Click a conversation to start chatting
+                </div>
+            </div>
+            <div class="input-area">
+                <input class="msg-input" id="msgInput" placeholder="Type your message..."
+                    onkeypress="handleKeyPress(event)">
+                <button class="send-btn" onclick="sendMsg()">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        let currentUser = parseInt(sessionStorage.getItem('currentUser'));
+
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        let currentConv = null;
+        const BASE_URL = 'http://localhost:5000';
+        const users = {
+            1: { name: 'Vipin', emoji: '👦🏻', letter: 'V' },
+            2: { name: 'Dhruv', emoji: '🌚', letter: 'D' },
+            3: { name: 'Vihaan', emoji: '🤓', letter: 'Vi' },
+            4: { name: 'Prince', emoji: '👶🏻', letter: 'P' },
+            5: { name: 'Mohit', emoji: '🗣️', letter: 'M' },
+            6: { name: 'Vaibhav', emoji: '🦹🏻‍♂️', letter: 'Va' }
+        };
+
+        // Display current user in header
+        if (currentUser && users[currentUser]) {
+            document.getElementById('currentUserDisplay').textContent =
+                `Logged in as: ${users[currentUser].name} ${users[currentUser].emoji}`;
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.removeItem('currentUser');
+                sessionStorage.removeItem('userPassword');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Update user UI
+        function updateUserUI() {
+            const user = users[currentUser];
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userAvatar').textContent = user.letter;
+        }
+
+        // Load conversations
+        async function loadConvs(preserveActive = false) {
+            try {
+                const res = await fetch(`${BASE_URL}/conversations?user_id=${currentUser}`);
+
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+
+                const convs = await res.json();
+                const convList = document.getElementById('convList');
+
+                // If preserveActive is true, only update badges
+                if (preserveActive && currentConv) {
+                    updateConversationBadges(convs);
+                    return;
+                }
+
+                // Build conversation list
+                convList.innerHTML = convs.map(conv => `
+                <div class="conv-item ${currentConv === conv.id ? 'active' : ''}" 
+                     data-conv-id="${conv.id}">
+                    <div class="conv-info">
+                        <div>
+                            <h3>${conv.name}</h3>
+                            <div class="conv-meta">
+                                ${conv.type === 'group' ? '<span class="group-badge">👥 Group</span>' : 'Direct'}
+                                ${conv.member_count > 2 ? `(${conv.member_count} members)` : ''}
+                            </div>
+                        </div>
+                        ${conv.unread_count > 0 ? `<div class="unread-badge">${conv.unread_count}</div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+                // Add click handlers
+                document.querySelectorAll('.conv-item').forEach(item => {
+                    item.addEventListener('click', function () {
+                        const convId = this.getAttribute('data-conv-id');
+                        loadConv(convId);
+                    });
+                });
+
+            } catch (e) {
+                console.error('Error loading conversations:', e);
+                document.getElementById('convList').innerHTML = `
+                <div style="padding:20px;color:#ef4444;text-align:center;">
+                    <div style="font-size:40px;margin-bottom:10px;">⚠️</div>
+                    <div style="font-weight:600;">Connection Error</div>
+                    <div style="font-size:13px;opacity:0.8;margin-top:5px;">
+                        Backend not running on port 5000
+                    </div>
+                    <button onclick="loadConvs()" style="
+                        margin-top:15px; padding:8px 20px; border-radius:20px;
+                        border:none; background:#ef4444; color:white; cursor:pointer;
+                    ">Retry</button>
+                </div>
+            `;
+            }
+        }
+
+        // Update badges without rebuilding DOM
+        function updateConversationBadges(convs) {
+            convs.forEach(conv => {
+                const convItem = document.querySelector(`[data-conv-id="${conv.id}"]`);
+                if (!convItem) return;
+
+                const existingBadge = convItem.querySelector('.unread-badge');
+
+                if (conv.unread_count > 0) {
+                    if (existingBadge) {
+                        existingBadge.textContent = conv.unread_count;
+                    } else {
+                        const badge = document.createElement('div');
+                        badge.className = 'unread-badge';
+                        badge.textContent = conv.unread_count;
+                        convItem.querySelector('.conv-info').appendChild(badge);
+                    }
+                } else {
+                    if (existingBadge) {
+                        existingBadge.remove();
+                    }
+                }
+            });
+        }
+
+        // Load conversation messages
+        async function loadConv(convId) {
+            currentConv = convId;
+
+            // Highlight active conversation
+            document.querySelectorAll('.conv-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-conv-id="${convId}"]`)?.classList.add('active');
+
+            document.getElementById('chatHeader').style.display = 'flex';
+
+            // Load members for header
+            try {
+                const membersRes = await fetch(`${BASE_URL}/conversations/${convId}/members`);
+                const members = await membersRes.json();
+
+                const convItem = document.querySelector(`[data-conv-id="${convId}"]`);
+                const convName = convItem.querySelector('h3').textContent;
+                document.getElementById('chatTitle').textContent = convName;
+                document.getElementById('memberCount').textContent = `${members.length} members`;
+            } catch (e) {
+                console.error('Error loading members:', e);
+            }
+
+            await loadMessagesOnly(convId);
+        }
+
+        // Load messages only
+        async function loadMessagesOnly(convId) {
+            try {
+                const res = await fetch(`${BASE_URL}/conversations/${convId}/messages?user_id=${currentUser}`);
+                const msgs = await res.json();
+                const messagesDiv = document.getElementById('messages');
+
+                if (msgs.length === 0) {
+                    messagesDiv.innerHTML =
+                        '<div style="text-align:center;color:#6b7280;padding:60px 20px;">No messages yet. Say hi! 👋</div>';
+                } else {
+                    messagesDiv.innerHTML = msgs.map(msg => `
+                    <div class="message ${msg.sender_id == currentUser ? 'sent' : 'received'}">
+                        <div class="msg-bubble ${msg.sender_id == currentUser ? 'sent' : 'received'}">
+                            <div>${msg.content}</div>
+                            <div class="msg-meta">
+                                <span>
+                                    ${users[msg.sender_id]?.name || 'Unknown'} · 
+                                    ${new Date(msg.created_at).toLocaleTimeString()}
+                                </span>
+                                <span class="read-status ${msg.is_read ? 'read' : ''}">
+                                    ${msg.is_read ? '✓✓' : '✓'}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                }
+
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (e) {
+                console.error('Error loading messages:', e);
+            }
+        }
+
+        // Send message
+        async function sendMsg() {
+            const input = document.getElementById('msgInput');
+            const content = input.value.trim();
+            if (!content || !currentConv) return;
+
+            const activeConvId = currentConv;
+
+            input.disabled = true;
+            const sendBtn = document.querySelector('.send-btn');
+            const originalText = sendBtn.textContent;
+            sendBtn.disabled = true;
+            sendBtn.textContent = '⏳';
+
+            try {
+                const res = await fetch(`${BASE_URL}/messages`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        conversation_id: activeConvId,
+                        sender_id: currentUser,
+                        content: content
+                    })
+                });
+
+                if (res.ok) {
+                    input.value = '';
+                    await loadMessagesOnly(activeConvId);
+                    await loadConvs(true); // Update badges only
+                } else {
+                    alert('Failed to send message');
+                }
+            } catch (e) {
+                console.error('Error sending message:', e);
+                alert('Network error. Please try again.');
+            } finally {
+                input.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.textContent = originalText;
+                input.focus();
+            }
+        }
+
+        // Enter key to send
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMsg();
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUserUI();
+            loadConvs();
+            document.getElementById('msgInput').focus();
+        });
+    </script>
+</body>
+
+</html>
