@@ -135,8 +135,8 @@ message_reads (
    
    Open `login.html` in your web browser, or use a local HTTP server:
 ```bash
-   python3 -m http.server 8000
-   # Then navigate to: http://localhost:8000/login.html
+   python3 -m http.server 5000
+   # Then navigate to: http://localhost:5000/login.html
 ```
 
 ## Project Structure
@@ -392,12 +392,12 @@ socket.on('new_message', (message) => {
 
 ### Bonus Features Implemented
 
-- ✅ Multiple users (6 instead of 2)
-- ✅ Group conversations
-- ✅ Real-time updates (WebSocket)
-- ✅ Professional UI with animations
-- ✅ Login system
-- ✅ Session management
+- Multiple users (6 instead of 2)
+- Group conversations
+- Real-time updates (WebSocket)
+- Professional UI with animations
+- Login system
+- Session management
 
 ## Technologies Used
 
@@ -421,7 +421,7 @@ This project is created for educational purposes as part of an internship assign
 
 Vipin Yadav
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Assignment provided by Giva Jewellery
 - Built with Flask and Socket.IO
