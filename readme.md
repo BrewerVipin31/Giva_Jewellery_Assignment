@@ -286,7 +286,7 @@ socket.on('new_message', (message) => {
 
 **`joined`**: Confirmation of joining a conversation room
 
-## 👥 Pre-seeded Users
+## Pre-seeded Users
 
 | ID | Name    | Emoji | Login Password |
 |----|---------|-------|----------------|
